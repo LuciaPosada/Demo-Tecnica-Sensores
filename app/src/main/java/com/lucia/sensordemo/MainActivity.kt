@@ -31,9 +31,10 @@ class MainActivity : ComponentActivity() {
         val acelerometro = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         val giroscopio = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
         val sensorTemperatura = sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE)
+        val magnetrometro = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
 
         setContent {
-            AppBase(sensorManager, acelerometro, giroscopio, sensorTemperatura)
+            AppBase(sensorManager, acelerometro, giroscopio, sensorTemperatura, magnetrometro)
         }
     }
 }
@@ -43,8 +44,9 @@ class MainActivity : ComponentActivity() {
  * @param acelerometro Sensor de tipo acelerómetro, o `null` si no está disponible
  * @param giroscopio Sensor de tipo giroscopio, o `null` si no está disponible
  * @param sensorTemperatura Sensor de tipo temperatura, o `null` si no está disponible
+ * @param magnetrometro Sensor de tipo magnetic-field, o `null` si no está disponible
  */
-fun comprobarDisponibilidadSensores(acelerometro: Sensor?, giroscopio: Sensor?, sensorTemperatura: Sensor?){
+fun comprobarDisponibilidadSensores(acelerometro: Sensor?, giroscopio: Sensor?, sensorTemperatura: Sensor?, magnetrometro: Sensor?){
 
     if(acelerometro==null){
         Log.d("Acelerometro","No Disponible")
@@ -63,6 +65,12 @@ fun comprobarDisponibilidadSensores(acelerometro: Sensor?, giroscopio: Sensor?, 
     }else{
         Log.d("Giroscopio","Disponible")
     }
+
+    if(magnetrometro==null){
+        Log.d("Magnetronomo","No Disponible")
+    }else{
+        Log.d("Magnetronomo","Disponible")
+    }
 }
 
 /**
@@ -73,12 +81,15 @@ fun comprobarDisponibilidadSensores(acelerometro: Sensor?, giroscopio: Sensor?, 
  * @param sensorTemperatura Sensor de tipo sensor de temperatura, o `null` si no está disponible
  */
 @Composable
-fun AppBase(sensorManager: SensorManager, acelerometro: Sensor?, giroscopio: Sensor?, sensorTemperatura: Sensor?) {
+fun AppBase(sensorManager: SensorManager, acelerometro: Sensor?, giroscopio: Sensor?, sensorTemperatura: Sensor?, magnetrometro: Sensor?) {
     var valoresAcelerometro by remember { mutableStateOf(listOf(0f, 0f, 0f)) }
     var valoresGiroscopio by remember { mutableStateOf(listOf(0f, 0f, 0f)) }
     var valorTemperatura by remember { mutableStateOf(0.0f) }
+    var valorMagnetrometro by remember { mutableStateOf(listOf(0f, 0f, 0f)) }
 
     val humbralDeActualizacion = 0.5f
+
+    comprobarDisponibilidadSensores(acelerometro, giroscopio, sensorTemperatura, magnetrometro)
 
     DisposableEffect(Unit) { // maneja los listeners
         val listener = object : SensorEventListener {
@@ -88,6 +99,7 @@ fun AppBase(sensorManager: SensorManager, acelerometro: Sensor?, giroscopio: Sen
                         Sensor.TYPE_ACCELEROMETER -> valoresAcelerometro = validarCambioSensor(it.values.toList(), humbralDeActualizacion)
                         Sensor.TYPE_GYROSCOPE -> valoresGiroscopio = validarCambioSensor(it.values.toList(), humbralDeActualizacion)
                         Sensor.TYPE_AMBIENT_TEMPERATURE -> valorTemperatura = it.values[0]
+                        Sensor.TYPE_MAGNETIC_FIELD -> valorMagnetrometro = validarCambioSensor(it.values.toList(), humbralDeActualizacion)
                     }
                 }
             }
@@ -98,13 +110,14 @@ fun AppBase(sensorManager: SensorManager, acelerometro: Sensor?, giroscopio: Sen
         acelerometro?.let { sensorManager.registerListener(listener, it, SensorManager.SENSOR_DELAY_NORMAL) }
         giroscopio?.let { sensorManager.registerListener(listener, it, SensorManager.SENSOR_DELAY_NORMAL) }
         sensorTemperatura?.let { sensorManager.registerListener(listener, it, SensorManager.SENSOR_DELAY_NORMAL) }
+        magnetrometro?.let { sensorManager.registerListener(listener, it, SensorManager.SENSOR_DELAY_NORMAL) }
 
         // Eliminacion de los listeners al finalizar
         onDispose {
             sensorManager.unregisterListener(listener)
         }
     }
-    UI(valoresAcelerometro, valoresGiroscopio, valorTemperatura)
+    UI(valoresAcelerometro, valoresGiroscopio, valorTemperatura, valorMagnetrometro)
 }
 
 /**
@@ -124,7 +137,7 @@ fun validarCambioSensor(valores: List<Float>, humbral: Float): List<Float> {
  * @param valorTemperatura Valor del contador de la temperatura
  */
 @Composable
-fun UI(valoresAcelerometro: List<Float>, valoresGiroscopio: List<Float>, valorTemperatura: Float) {
+fun UI(valoresAcelerometro: List<Float>, valoresGiroscopio: List<Float>, valorTemperatura: Float, valorMagnetrometro: List<Float>) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -154,6 +167,11 @@ fun UI(valoresAcelerometro: List<Float>, valoresGiroscopio: List<Float>, valorTe
         )
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        TarjetaSensorMultiplesValores(
+            tituloSensor = "Sensor Magnetico",
+            valoresSensor = valorMagnetrometro
+        )
 
     }
 }
