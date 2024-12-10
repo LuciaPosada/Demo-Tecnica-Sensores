@@ -79,6 +79,7 @@ fun comprobarDisponibilidadSensores(acelerometro: Sensor?, giroscopio: Sensor?, 
  * @param acelerometro Sensor de tipo acelerómetro, o `null` si no está disponible
  * @param giroscopio Sensor de tipo giroscopio, o `null` si no está disponible
  * @param sensorTemperatura Sensor de tipo sensor de temperatura, o `null` si no está disponible
+ * @param magnetrometro Sensor de tipo magnetic-field, o `null` si no está disponible
  */
 @Composable
 fun AppBase(sensorManager: SensorManager, acelerometro: Sensor?, giroscopio: Sensor?, sensorTemperatura: Sensor?, magnetrometro: Sensor?) {
@@ -135,6 +136,7 @@ fun validarCambioSensor(valores: List<Float>, humbral: Float): List<Float> {
  * @param valoresAcelerometro Lista con las mediciones del acelerómetro
  * @param valoresGiroscopio Lista con las mediciones del giroscopio
  * @param valorTemperatura Valor del contador de la temperatura
+ * @param valorMagnetrometro Lista con las mediciones del magnetrometro
  */
 @Composable
 fun UI(valoresAcelerometro: List<Float>, valoresGiroscopio: List<Float>, valorTemperatura: Float, valorMagnetrometro: List<Float>) {
